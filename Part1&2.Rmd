@@ -1,0 +1,73 @@
+---
+title: "Untitled"
+author: "Hardik Ballal"
+date: "14 December 2018"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(xlsx)
+library(lubridate)
+g = read.xlsx("C:/Users/hardik/Desktop/Griffith/Part1.xlsx",sheetName = "Sheet1")
+h = read.xlsx("C:/Users/hardik/Desktop/Griffith/Part2.xlsx",sheetName = "Data analysis")
+```
+
+
+#combining both the datasets and removing the NA values.
+```{r}
+grif <- rbind(g,h)
+total = na.omit(grif)
+d = distinct(total)
+```
+
+
+#Major Destination Markets
+```{r}
+a = d %>% group_by(DESTINATION.PORT) %>% summarise(total_quantity = sum(QUANTITY)) %>% arrange(desc(total_quantity))
+
+b = as.data.frame(a)
+distinct(b)
+
+
+value = d %>% group_by(DESTINATION.PORT) %>% summarise(Values_dollar=sum(VALUE.USD.)) %>% arrange(desc(Values_dollar))
+distinct(value)
+
+unit = d %>% group_by(DESTINATION.PORT) %>% summarise(unit_price=sum(UNIT.PRICE)) %>% arrange(desc(unit_price))
+distinct(unit)
+```
+
+
+#importing companies for these products
+```{r}
+companies = d %>% group_by(BUYER,PRODUCT.DESCRIPTION) %>% summarise(price = sum(VALUE.USD.)) %>% arrange(desc(price)) %>% head(10)
+companies
+```
+
+
+
+#volume of categories being exported from India 
+```{r}
+d %>% filter(SELLER.COUNTRY == 'INDIA') %>% summarise(quantsum = sum(QUANTITY))
+```
+
+
+
+
+#Trend In Prices
+```{r}
+
+final_data = d %>% select(1,13) %>% head(40)
+final_data = data.frame(final_data)
+
+ggplot(final_data,aes(x = DATE, y = VALUE.USD.)) + geom_point()
+```
+
+#Major Companies Involved in the trade
+```{r}
+d %>% group_by(BUYER,SELLER) %>% summarise(price = sum(VALUE.USD.)) %>% arrange(desc(price)) %>% head(10)
+```
